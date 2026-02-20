@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [people, setPeople] = useState<Person[]>([])
   const [currentStatus, setCurrentStatus] = useState('')
+  const [pendingStatus, setPendingStatus] = useState('')
   const [updating, setUpdating] = useState(false)
   const [statusMsg, setStatusMsg] = useState('')
 
@@ -33,7 +34,6 @@ export default function DashboardPage() {
     fetchAll()
   }, [router, fetchAll])
 
-  // Sync currentStatus from live data
   useEffect(() => {
     if (!displayName || !people.length) return
     const me = people.find((p) => p.display_name === displayName)
@@ -42,25 +42,24 @@ export default function DashboardPage() {
     }
   }, [people, displayName])
 
-  // Real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('people_status_changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'people_status' },
-        () => {
-          fetchAll()
-        }
+        () => { fetchAll() }
       )
       .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [fetchAll])
 
-  const handleStatusUpdate = async (status: string) => {
+  const handleStatusClick = (status: string) => {
+    setPendingStatus(status === pendingStatus ? '' : status)
+  }
+
+  const handleSave = async () => {
+    if (!pendingStatus) return
     const name = localStorage.getItem('display_name')
     const pwd = localStorage.getItem('password')
     if (!name || !pwd) return
@@ -72,12 +71,13 @@ export default function DashboardPage() {
       const res = await fetch('/api/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ display_name: name, password: pwd, status }),
+        body: JSON.stringify({ display_name: name, password: pwd, status: pendingStatus }),
       })
 
       if (res.ok) {
-        setCurrentStatus(status)
-        setStatusMsg(`Status set to "${status}"`)
+        setCurrentStatus(pendingStatus)
+        setPendingStatus('')
+        setStatusMsg(`Status updated to "${pendingStatus}"`)
         setTimeout(() => setStatusMsg(''), 2500)
       } else {
         const d = await res.json()
@@ -98,24 +98,38 @@ export default function DashboardPage() {
 
   if (!displayName) return null
 
+  const hasPending = pendingStatus && pendingStatus !== currentStatus
+
   return (
     <div style={styles.page}>
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <div>
-            <h1 style={styles.title}>Where are you right now?</h1>
-            <p style={styles.sub}>Logged in as <strong>{displayName}</strong></p>
-          </div>
-          <button onClick={handleLogout} style={styles.logoutBtn}>
-            Log out
-          </button>
+      {/* Header */}
+      <div style={styles.header}>
+        <div>
+          <span style={styles.appName}>Team Status</span>
+          <span style={styles.userName}>{displayName}</span>
         </div>
+        <button onClick={handleLogout} style={styles.logoutBtn}>Log out</button>
+      </div>
+
+      <div style={styles.content}>
+        <p style={styles.prompt}>Where are you right now?</p>
 
         <StatusButtons
-          current={currentStatus}
+          saved={currentStatus}
+          pending={pendingStatus}
+          onSelect={handleStatusClick}
           updating={updating}
-          onSelect={handleStatusUpdate}
         />
+
+        {hasPending && (
+          <button
+            onClick={handleSave}
+            disabled={updating}
+            style={styles.saveBtn}
+          >
+            {updating ? 'Saving…' : `Save — I'm at ${pendingStatus}`}
+          </button>
+        )}
 
         {statusMsg && (
           <p style={styles.statusMsg}>{statusMsg}</p>
@@ -130,35 +144,32 @@ export default function DashboardPage() {
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh',
-    background: '#f5f5f5',
-    padding: '32px 16px',
-  },
-  container: {
-    maxWidth: '760px',
-    margin: '0 auto',
     background: '#fff',
-    borderRadius: '16px',
-    padding: '40px',
-    boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
+    display: 'flex',
+    flexDirection: 'column',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '8px',
+    alignItems: 'center',
+    padding: '14px 20px',
+    borderBottom: '1px solid #f0f0f0',
+    position: 'sticky',
+    top: 0,
+    background: '#fff',
+    zIndex: 10,
   },
-  title: {
-    fontSize: '26px',
+  appName: {
     fontWeight: 700,
-    margin: '0 0 4px',
+    fontSize: '16px',
+    marginRight: '8px',
   },
-  sub: {
+  userName: {
     fontSize: '14px',
-    color: '#666',
-    margin: 0,
+    color: '#888',
   },
   logoutBtn: {
-    padding: '8px 16px',
+    padding: '6px 14px',
     fontSize: '13px',
     background: 'transparent',
     border: '1px solid #ddd',
@@ -166,12 +177,38 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     color: '#666',
   },
+  content: {
+    padding: '20px 16px',
+    maxWidth: '520px',
+    margin: '0 auto',
+    width: '100%',
+  },
+  prompt: {
+    fontSize: '22px',
+    fontWeight: 700,
+    marginBottom: '4px',
+    color: '#111',
+  },
+  saveBtn: {
+    width: '100%',
+    padding: '16px',
+    fontSize: '16px',
+    fontWeight: 700,
+    background: '#3b82f6',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    marginTop: '4px',
+    marginBottom: '12px',
+    transition: 'background 0.15s ease',
+  },
   statusMsg: {
     fontSize: '14px',
     color: '#059669',
     background: '#ecfdf5',
-    padding: '8px 14px',
+    padding: '10px 14px',
     borderRadius: '8px',
-    margin: '-24px 0 24px',
+    marginBottom: '8px',
   },
 }

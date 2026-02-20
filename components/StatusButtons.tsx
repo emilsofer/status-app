@@ -7,16 +7,33 @@ const STATUSES = [
 ]
 
 interface Props {
-  current: string
-  updating: boolean
+  saved: string
+  pending: string
   onSelect: (status: string) => void
+  updating: boolean
 }
 
-export default function StatusButtons({ current, updating, onSelect }: Props) {
+export default function StatusButtons({ saved, pending, onSelect, updating }: Props) {
   return (
     <div style={styles.grid}>
       {STATUSES.map(({ label, emoji }) => {
-        const isActive = current === label
+        const isPending = pending === label
+        const isSaved = !pending && saved === label
+
+        let bg = '#f0f0f0'
+        let color = '#222'
+        let border = '2px solid transparent'
+
+        if (isPending) {
+          bg = '#eff6ff'
+          color = '#1d4ed8'
+          border = '2px solid #3b82f6'
+        } else if (isSaved) {
+          bg = '#f0fdf4'
+          color = '#15803d'
+          border = '2px solid #22c55e'
+        }
+
         return (
           <button
             key={label}
@@ -24,14 +41,16 @@ export default function StatusButtons({ current, updating, onSelect }: Props) {
             disabled={updating}
             style={{
               ...styles.btn,
-              background: isActive ? '#111' : '#f0f0f0',
-              color: isActive ? '#fff' : '#222',
-              transform: isActive ? 'scale(1.03)' : 'scale(1)',
-              opacity: updating && !isActive ? 0.6 : 1,
+              background: bg,
+              color,
+              border,
+              opacity: updating ? 0.6 : 1,
             }}
           >
-            <span style={{ fontSize: '72px', lineHeight: 1 }}>{emoji}</span>
-            <span style={{ fontWeight: 600, fontSize: '18px' }}>{label}</span>
+            <span style={{ fontSize: '56px', lineHeight: 1 }}>{emoji}</span>
+            <span style={{ fontWeight: 600, fontSize: '16px', marginTop: '6px' }}>{label}</span>
+            {isSaved && <span style={styles.savedBadge}>✓ Current</span>}
+            {isPending && <span style={styles.pendingBadge}>Selected</span>}
           </button>
         )
       })}
@@ -42,19 +61,32 @@ export default function StatusButtons({ current, updating, onSelect }: Props) {
 const styles: Record<string, React.CSSProperties> = {
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-    gap: '12px',
-    margin: '24px 0 40px',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '10px',
+    margin: '20px 0',
   },
   btn: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '8px',
-    padding: '28px 12px',
-    border: 'none',
-    borderRadius: '12px',
+    gap: '4px',
+    padding: '20px 8px',
+    borderRadius: '14px',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
+    minHeight: '120px',
+    justifyContent: 'center',
+  },
+  savedBadge: {
+    fontSize: '11px',
+    fontWeight: 600,
+    color: '#15803d',
+    marginTop: '4px',
+  },
+  pendingBadge: {
+    fontSize: '11px',
+    fontWeight: 600,
+    color: '#1d4ed8',
+    marginTop: '4px',
   },
 }

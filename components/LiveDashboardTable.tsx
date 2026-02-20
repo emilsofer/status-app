@@ -16,11 +16,11 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(seconds / 86400)}d ago`
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  '4': '#dbeafe',
-  '8': '#d1fae5',
-  'Home': '#fef9c3',
-  'Unknown': '#f3f4f6',
+const STATUS_META: Record<string, { color: string; dot: string }> = {
+  '4':       { color: '#dbeafe', dot: '#3b82f6' },
+  '8':       { color: '#d1fae5', dot: '#22c55e' },
+  'Home':    { color: '#fef9c3', dot: '#eab308' },
+  'Unknown': { color: '#f3f4f6', dot: '#d1d5db' },
 }
 
 interface Props {
@@ -30,92 +30,105 @@ interface Props {
 
 export default function LiveDashboardTable({ people, currentUser }: Props) {
   if (people.length === 0) {
-    return <p style={{ color: '#999', marginTop: '32px' }}>No one here yet.</p>
+    return <p style={{ color: '#999', marginTop: '24px', fontSize: '15px' }}>No one here yet.</p>
   }
 
   return (
     <div style={styles.wrapper}>
-      <h2 style={styles.heading}>Everyone</h2>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>Name</th>
-            <th style={styles.th}>Status</th>
-            <th style={{ ...styles.th, textAlign: 'right' }}>Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          {people.map((p) => {
-            const isMe = p.display_name === currentUser
-            const bgColor = STATUS_COLORS[p.current_status] ?? '#f3f4f6'
-            return (
-              <tr key={p.display_name} style={{ background: isMe ? '#f0f7ff' : 'transparent' }}>
-                <td style={styles.td}>
-                  <span style={{ fontWeight: isMe ? 700 : 400 }}>{p.display_name}</span>
-                  {isMe && (
-                    <span style={styles.youBadge}>you</span>
-                  )}
-                </td>
-                <td style={styles.td}>
-                  <span style={{ ...styles.statusBadge, background: bgColor }}>
-                    {p.current_status || '—'}
-                  </span>
-                </td>
-                <td style={{ ...styles.td, textAlign: 'right', color: '#999', fontSize: '13px' }}>
-                  {timeAgo(p.updated_at)}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+      <p style={styles.heading}>Team</p>
+      <div style={styles.list}>
+        {people.map((p) => {
+          const isMe = p.display_name === currentUser
+          const meta = STATUS_META[p.current_status] ?? STATUS_META['Unknown']
+
+          return (
+            <div
+              key={p.display_name}
+              style={{
+                ...styles.row,
+                borderLeft: isMe ? '3px solid #3b82f6' : '3px solid transparent',
+                background: isMe ? '#f8faff' : '#fff',
+              }}
+            >
+              <div style={styles.left}>
+                <span
+                  style={{ ...styles.dot, background: meta.dot }}
+                />
+                <span style={{ fontWeight: isMe ? 700 : 500, fontSize: '15px' }}>
+                  {p.display_name}
+                  {isMe && <span style={styles.youLabel}> · you</span>}
+                </span>
+              </div>
+              <div style={styles.right}>
+                <span style={{ ...styles.badge, background: meta.color }}>
+                  {p.current_status || '—'}
+                </span>
+                <span style={styles.time}>{timeAgo(p.updated_at)}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
 const styles: Record<string, React.CSSProperties> = {
   wrapper: {
-    marginTop: '16px',
+    marginTop: '28px',
   },
   heading: {
-    fontSize: '18px',
-    fontWeight: 600,
-    marginBottom: '12px',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: '15px',
-  },
-  th: {
-    textAlign: 'left',
-    padding: '10px 14px',
-    borderBottom: '2px solid #eee',
     fontSize: '12px',
     fontWeight: 700,
     textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: '#888',
+    letterSpacing: '0.07em',
+    color: '#aaa',
+    marginBottom: '8px',
   },
-  td: {
+  list: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: '12px 14px',
-    borderBottom: '1px solid #f0f0f0',
-    verticalAlign: 'middle',
+    borderRadius: '10px',
+    transition: 'background 0.1s',
   },
-  statusBadge: {
-    display: 'inline-block',
+  left: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  dot: {
+    width: '10px',
+    height: '10px',
+    borderRadius: '50%',
+    flexShrink: 0,
+  },
+  right: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  badge: {
     padding: '3px 10px',
     borderRadius: '999px',
     fontSize: '13px',
-    fontWeight: 500,
-  },
-  youBadge: {
-    marginLeft: '8px',
-    fontSize: '11px',
     fontWeight: 600,
+  },
+  time: {
+    fontSize: '12px',
+    color: '#bbb',
+    minWidth: '48px',
+    textAlign: 'right',
+  },
+  youLabel: {
+    fontWeight: 400,
     color: '#3b82f6',
-    background: '#eff6ff',
-    padding: '2px 6px',
-    borderRadius: '999px',
+    fontSize: '13px',
   },
 }
