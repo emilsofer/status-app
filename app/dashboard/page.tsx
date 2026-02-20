@@ -96,8 +96,28 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
+  const handleClearBoard = async () => {
+    if (!confirm('לנקות את הלוח לכולם?')) return
+    const name = localStorage.getItem('display_name')
+    const pwd = localStorage.getItem('password')
+    if (!name || !pwd) return
+
+    const res = await fetch('/api/admin/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: name, password: pwd }),
+    })
+
+    if (res.ok) {
+      setCurrentStatus('')
+      setStatusMsg('הלוח נוקה בהצלחה')
+      setTimeout(() => setStatusMsg(''), 2500)
+    }
+  }
+
   if (!displayName) return null
 
+  const isAdmin = displayName === process.env.NEXT_PUBLIC_ADMIN_NAME
   const hasPending = pendingStatus && pendingStatus !== currentStatus
 
   return (
@@ -136,6 +156,12 @@ export default function DashboardPage() {
         )}
 
         <LiveDashboardTable people={people} currentUser={displayName} />
+
+        {isAdmin && (
+          <button onClick={handleClearBoard} style={styles.clearBtn}>
+            🗑 נקה לוח
+          </button>
+        )}
       </div>
     </div>
   )
@@ -210,5 +236,17 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '10px 14px',
     borderRadius: '8px',
     marginBottom: '8px',
+  },
+  clearBtn: {
+    marginTop: '32px',
+    width: '100%',
+    padding: '12px',
+    fontSize: '14px',
+    fontWeight: 600,
+    background: 'transparent',
+    color: '#e53e3e',
+    border: '1px solid #fed7d7',
+    borderRadius: '10px',
+    cursor: 'pointer',
   },
 }
