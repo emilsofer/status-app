@@ -79,6 +79,7 @@ export default function DashboardPage() {
         setPendingStatus('')
         setStatusMsg(`הסטטוס עודכן ל"${pendingStatus}"`)
         setTimeout(() => setStatusMsg(''), 2500)
+        fetchAll()
       } else {
         const d = await res.json()
         setStatusMsg(`Error: ${d.error}`)
