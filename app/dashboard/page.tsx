@@ -77,7 +77,7 @@ export default function DashboardPage() {
       if (res.ok) {
         setCurrentStatus(pendingStatus)
         setPendingStatus('')
-        setStatusMsg(`Status updated to "${pendingStatus}"`)
+        setStatusMsg(`הסטטוס עודכן ל"${pendingStatus}"`)
         setTimeout(() => setStatusMsg(''), 2500)
       } else {
         const d = await res.json()
@@ -105,14 +105,14 @@ export default function DashboardPage() {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <span style={styles.appName}>Team Status</span>
+          <span style={styles.appName}>סטטוס צוות</span>
           <span style={styles.userName}>{displayName}</span>
         </div>
-        <button onClick={handleLogout} style={styles.logoutBtn}>Log out</button>
+        <button onClick={handleLogout} style={styles.logoutBtn}>יציאה</button>
       </div>
 
       <div style={styles.content}>
-        <p style={styles.prompt}>Where are you right now?</p>
+        <p style={styles.prompt}>איפה אתה עכשיו?</p>
 
         <StatusButtons
           saved={currentStatus}
@@ -127,7 +127,7 @@ export default function DashboardPage() {
             disabled={updating}
             style={styles.saveBtn}
           >
-            {updating ? 'Saving…' : `Save — I'm at ${pendingStatus}`}
+            {updating ? 'שומר…' : `שמור — אני ב${pendingStatus}`}
           </button>
         )}
 

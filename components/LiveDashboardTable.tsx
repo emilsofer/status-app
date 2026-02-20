@@ -9,11 +9,11 @@ export type Person = {
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (seconds < 10) return 'just now'
-  if (seconds < 60) return `${seconds}s ago`
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
-  return `${Math.floor(seconds / 86400)}d ago`
+  if (seconds < 10) return 'עכשיו'
+  if (seconds < 60) return `לפני ${seconds}ש׳`
+  if (seconds < 3600) return `לפני ${Math.floor(seconds / 60)}ד׳`
+  if (seconds < 86400) return `לפני ${Math.floor(seconds / 3600)}ש״`
+  return `לפני ${Math.floor(seconds / 86400)} ימים`
 }
 
 const STATUS_META: Record<string, { color: string; dot: string }> = {
@@ -30,12 +30,12 @@ interface Props {
 
 export default function LiveDashboardTable({ people, currentUser }: Props) {
   if (people.length === 0) {
-    return <p style={{ color: '#999', marginTop: '24px', fontSize: '15px' }}>No one here yet.</p>
+    return <p style={{ color: '#999', marginTop: '24px', fontSize: '15px' }}>אין עדיין אנשים כאן.</p>
   }
 
   return (
     <div style={styles.wrapper}>
-      <p style={styles.heading}>Team</p>
+      <p style={styles.heading}>הצוות</p>
       <div style={styles.list}>
         {people.map((p) => {
           const isMe = p.display_name === currentUser
@@ -56,7 +56,7 @@ export default function LiveDashboardTable({ people, currentUser }: Props) {
                 />
                 <span style={{ fontWeight: isMe ? 700 : 500, fontSize: '15px' }}>
                   {p.display_name}
-                  {isMe && <span style={styles.youLabel}> · you</span>}
+                  {isMe && <span style={styles.youLabel}> · אתה</span>}
                 </span>
               </div>
               <div style={styles.right}>

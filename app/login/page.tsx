@@ -49,22 +49,22 @@ export default function LoginPage() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h1 style={styles.title}>Team Status</h1>
-        <p style={styles.subtitle}>Enter your name and the shared password to continue.</p>
+        <h1 style={styles.title}>סטטוס צוות</h1>
+        <p style={styles.subtitle}>הכנס את שמך והסיסמה המשותפת כדי להמשיך.</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <label style={styles.label}>Your Name</label>
+          <label style={styles.label}>השם שלך</label>
           <input
             style={styles.input}
             type="text"
-            placeholder="e.g. Sarah"
+            placeholder="לדוגמה: שרה"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             autoFocus
           />
 
-          <label style={styles.label}>Shared Password</label>
+          <label style={styles.label}>סיסמה משותפת</label>
           <input
             style={styles.input}
             type="password"
@@ -77,7 +77,7 @@ export default function LoginPage() {
           {error && <p style={styles.error}>{error}</p>}
 
           <button style={styles.button} type="submit" disabled={loading}>
-            {loading ? 'Entering…' : 'Enter →'}
+            {loading ? 'נכנס…' : '← כניסה'}
           </button>
         </form>
       </div>
