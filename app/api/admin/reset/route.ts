@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   const { error } = await supabase
     .from('people_status')
-    .update({ current_status: 'Unknown', updated_at: new Date().toISOString() })
+    .delete()
     .neq('display_name', '')
 
   if (error) {
