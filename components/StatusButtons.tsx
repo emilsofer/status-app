@@ -48,7 +48,6 @@ export default function StatusButtons({ saved, pending, onSelect, updating }: Pr
             }}
           >
             <span style={{ fontSize: '56px', lineHeight: 1 }}>{emoji}</span>
-            <span style={{ fontWeight: 600, fontSize: '16px', marginTop: '6px' }}>{label}</span>
             {isSaved && <span style={styles.savedBadge}>✓ נוכחי</span>}
             {isPending && <span style={styles.pendingBadge}>נבחר</span>}
           </button>
